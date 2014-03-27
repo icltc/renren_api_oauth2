@@ -1,9 +1,9 @@
-Renren OAuth 2 API Python SDK
-使用简介
-Step 1: 注册人人APP
+#Renren OAuth 2 API Python SDK
+#使用简介
+#Step 1: 注册人人APP
 注册人人App后，可以获得app key和app secret，然后定义网站回调地址：
 
-Step 2: 从注册的APP中得到如下参数
+#Step 2: 从注册的APP中得到如下参数
 from renren import APIClient
 
 API_KEY = '1234567' # api key
@@ -11,7 +11,7 @@ APP_SECRET = 'abcdefghijklmn' # app secret
 REDIRECT_URL = 'http://www.example.com/callback' # callback url
 
 
-Step 3: 得到authorize code
+#Step 3: 得到authorize code
 引导用户点击
 http://graph.renren.com/oauth/grant?client_id=267865509b3f4d6d8750c0e589981511&redirect_uri=http%3A%2F%2Fwww.amadeus.com&response_type=code&display=page&scope=&state=&secure=true&origin=00000
 read_user_blog
@@ -32,17 +32,17 @@ responsetype 是 code
 
 用户授权后，将跳转至网站回调地址，在url上会附加参数code=abcd1234：
 
-Step 4: 获取access token
-# 获取URL参数code:
+#Step 4: 获取access token
+// 获取URL参数code:
 code = #将上面获得的code取出放在此处
 client = APIClient(app_key=API_KEY, app_secret=APP_SECRET, redirect_uri=REDIRECT_URL)
 r = client.request_access_token(code)
 access_token = r.access_token # 人人返回的access token
 expires_in = r.expires_in # token过期的UNIX时间：http://zh.wikipedia.org/wiki/UNIX%E6%97%B6%E9%97%B4
 
-# token 被设定在了client里，以后调用api的时候免去了输入token
+//token 被设定在了client里，以后调用api的时候免去了输入token
 client.set_access_token(access_token, expires_in)
-Step 5: 调用API
+#Step 5: 调用API
 然后，可调用任意API：
 
 print client.statuses.user_timeline.get()
