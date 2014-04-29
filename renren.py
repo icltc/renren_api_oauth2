@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__version__ = '1.0.0'
+__version__ = '1.0.2'
 __author__ = 'Tianchi Liu (liutianchi@yahoo.com)'
 
+import logging
+
+logging.basicConfig(format='[%(levelname)s] [%(asctime)s] [%(filename)s (%(lineno)s)]: %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level = logging.DEBUG)
 '''
 Python client SDK for renren API using OAuth 2.
 '''
@@ -13,8 +16,8 @@ try:
 except ImportError:
     from StringIO import StringIO
 
-import gzip, time, json, hmac, base64, hashlib, urllib, urllib2, logging, mimetypes, collections
-
+import gzip, time, json, hmac, base64, hashlib, urllib, urllib2, mimetypes, collections
+logging.basicConfig(level=logging.INFO)
 class APIError(StandardError):
     '''
     raise APIError if receiving json message indicating failure.
@@ -107,6 +110,7 @@ _HTTP_UPLOAD = 2
 
 def _http_get(url, authorization=None, **kw):
     logging.info('GET %s' % url)
+    print url
     return _http_call(url, _HTTP_GET, authorization, **kw)
 
 def _http_post(url, authorization=None, **kw):
@@ -133,10 +137,9 @@ def _http_call(the_url, method, authorization, **kw):
     '''
     params = None
     boundary = None
-
     if method==_HTTP_UPLOAD:
         # fix sina upload url:
-        the_url = the_url.replace('https://api.', 'https://api.')
+        the_url = the_url.replace('https://api.', 'https://upload.')
         params, boundary = _encode_multipart(**kw)
     else:
         params = _encode_params(**kw)
@@ -149,12 +152,14 @@ def _http_call(the_url, method, authorization, **kw):
     
     req = urllib2.Request(http_url, data=http_body)
     req.add_header('Accept-Encoding', 'gzip')
+    logging.info("\nRequesting URL: " + http_url + "   \n# HTTP Body: " + str(http_body))
     if authorization:
         req.add_header('Authorization', 'Bearer %s' % authorization)
     if boundary:
         req.add_header('Content-Type', 'multipart/form-data; boundary=%s' % boundary)
+    timeout = 60 if method == _HTTP_UPLOAD else 10
     try:
-        resp = urllib2.urlopen(req, timeout=10)
+        resp = urllib2.urlopen(req, timeout=timeout)
         body = _read_body(resp)
         r = _parse_json(body)
         if hasattr(r, 'error_code'):
@@ -284,6 +289,7 @@ class APIClient(object):
         return not self.access_token or time.time() > self.expires
 
     def __getattr__(self, attr):
+        #print attr
         if '__' in attr:
             return getattr(self.get, attr)
         return _Callable(self, attr)
@@ -299,7 +305,7 @@ class _Executable(object):
 
     def __call__(self, **kw):
         method = _METHOD_MAP[self._method]
-        if method==_HTTP_POST and 'pic' in kw:
+        if method==_HTTP_POST and 'file' in kw:
             method = _HTTP_UPLOAD
         return _http_call('%s%s' % (self._client.api_url, self._path), method, self._client.access_token, **kw)
 
@@ -315,9 +321,9 @@ class _Callable(object):
         self._name = name
 
     def __getattr__(self, attr):
-        if attr=='get':
+        if attr=='GET': 
             return _Executable(self._client, 'GET', self._name)
-        if attr=='post':
+        if attr=='POST':
             return _Executable(self._client, 'POST', self._name)
         name = '%s/%s' % (self._name, attr)
         return _Callable(self._client, name)
