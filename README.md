@@ -44,10 +44,9 @@ expires_in = r.expires_in # token过期的UNIX时间：http://zh.wikipedia.org/w
 client.set_access_token(access_token, expires_in)
 #Step 5: 调用API
 然后，可调用任意API：
+client.location.feed.list.GET(locationFeedType = 'TYPE_ALL', longitude = 0.18, latitude =51.49)
+client.blog.put.POST( title = "Test", content = 'This is test blog!')
 
-print client.statuses.user_timeline.get()
-print client.statuses.update.post(status=u'测试OAuth 2.0发微博')
-print client.statuses.upload.post(status=u'测试OAuth 2.0带图片发微博', pic=open('/Users/michael/test.png'))
 【API调用规则】
 
 首先查看人人API文档（http://wiki.dev.renren.com/wiki/API2），例如：
@@ -61,10 +60,10 @@ API：/v2/status/list
 ownerId	long	true	状态所有者的用户ID
 
 
-调用方法：将API的“/”变为“.”，根据请求格式是GET或POST，调用get ()或post()并传入关键字参数，但不包括source和access_token参数：
+调用方法：将API的“/”变为“.”，根据请求格式是GET或POST，调用GET()或POST()并传入关键字参数，但不包括source和access_token参数：注： GET/POST一定要大写
 
 GET 调用：
-r = client.status.list.get(ownerId = 251560914)
+r = client.status.list.GET(ownerId = 251560914)
 
 for st in r['response']:
     print st['content']
@@ -72,7 +71,7 @@ for st in r['response']:
 
 若为POST调用，则示例代码如下：
 
-r = client.album.put.post(name = "Test")
+r = client.album.put.POST(name = "Test")
 
 
 
